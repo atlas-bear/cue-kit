@@ -24,6 +24,16 @@ env/
 .vscode/
 *.swp
 
+# Local agent / dev rules (personal workflow, not part of the product)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.claude.local.md
+AGENTS.md
+.cursor/
+.cursorrules
+.aider*
+
 # Local config and secrets
 .env
 .env.*
