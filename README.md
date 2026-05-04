@@ -1,8 +1,14 @@
 # cue-kit
 
-<img width="1434" height="788" alt="frame_generic_light-5" src="https://github.com/user-attachments/assets/cdd5c7f4-baaf-4dd5-ad57-f93508a6da44" />
+![Alt text](https://github.com/user-attachments/assets/9c78f406-be76-494c-82ff-32c450aed745 "Screenshot of cue-kit")
 
-A tactical toolkit for turning videos into structured text. Download a video (URL or local file), extract frames, pull a timestamped transcript, and produce output shaped for the job at hand — a quick summary, a training document, lecture notes aligned to slides, or a clean transcript.
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)]()
+[![Code style: ruff](https://img.shields.io/badge/lint-ruff-46aef7.svg)](https://github.com/astral-sh/ruff)
+[![GitHub Stars](https://img.shields.io/github/stars/atlas-bear/cue-kit?style=social)](https://github.com/atlas-bear/cue-kit/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/atlas-bear/cue-kit)](https://github.com/atlas-bear/cue-kit/issues)
+
+A tactical toolkit for turning videos into structured text. Download a video (URL or local file), extract frames, pull a timestamped transcript, and produce output shaped for the job at hand — a quick summary, an intel brief, a training document, lecture notes aligned to slides, or a clean transcript.
 
 > Status: **alpha**. The `summary` and `transcript` modes work today; `training-doc` and `lecture-notes` are scaffolded and under active development.
 
