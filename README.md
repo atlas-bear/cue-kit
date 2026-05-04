@@ -1,6 +1,6 @@
 # cue-kit
 
-<img width="1878" height="992" alt="frame_generic_light-4" src="https://github.com/user-attachments/assets/4902b58c-38c2-49fe-acbd-69f0c138da94" />
+<img width="1434" height="788" alt="frame_generic_light-5" src="https://github.com/user-attachments/assets/cdd5c7f4-baaf-4dd5-ad57-f93508a6da44" />
 
 A tactical toolkit for turning videos into structured text. Download a video (URL or local file), extract frames, pull a timestamped transcript, and produce output shaped for the job at hand — a quick summary, a training document, lecture notes aligned to slides, or a clean transcript.
 
