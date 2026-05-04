@@ -10,13 +10,11 @@
 
 A tactical toolkit for turning videos into structured text. Download a video (URL or local file), extract frames, pull a timestamped transcript, and produce output shaped for the job at hand — a quick summary, an intel brief, a training document, lecture notes aligned to slides, or a clean transcript.
 
-> Status: **alpha**. The `summary` and `transcript` modes work today; `training-doc` and `lecture-notes` are scaffolded and under active development.
-
-## Why this exists
-
 Claude can read a webpage, run a script, browse a repo. Out of the box, it can't watch a video — paste a YouTube URL and it has to guess from the title or work off a transcript that misses everything visual.
 
 cue-kit closes that gap. Hand it a URL or a local file and it produces frames plus a timestamped transcript that an LLM can actually consume. Pair it with the bundled Claude Code skill and `/cue-kit <url> <question>` is a one-liner: Claude `Read`s every frame, sees the transcript, and answers grounded in what's actually on screen and in the audio — not the title, not a guess.
+
+> Status: **alpha**. The `summary` and `transcript` modes work today; `training-doc` and `lecture-notes` are scaffolded and under active development.
 
 ## What it's for
 
