@@ -25,11 +25,14 @@ cue-kit closes that gap. Hand it a URL or a local file and it produces frames pl
 
 ## Common workflows
 
-**Analyzing someone else's content.** Paste a viral YouTube link and ask `what hook did they open with?` — cue-kit pulls the opening frames and the first lines of transcript, and Claude breaks down the structure. Same playbook for ad creative, podcast intros, competitor launches: anywhere the *how* matters as much as the *what*.
+**Tracking suspicious vessel behavior.** 
+Feed in AIS playback clips or screen recordings of vessel movement. Cue-kit isolates key segments—course changes, loitering patterns, or AIS gaps—and surfaces the exact moments where behavior deviates from norms. Instead of scrubbing timelines manually, you get a quick breakdown of when and how a vessel started acting suspiciously.
 
-**Diagnosing a bug from a screen recording.** Someone sends a `.mov` of something broken. Run it through cue-kit with the question `what's going wrong?` and Claude finds the frame where the issue appears, describes what's on screen, and often catches the cause without you ever opening the file.
+**Analyzing port activity from video feeds.** 
+Drop in CCTV or drone footage from port areas and ask what changed over time. Cue-kit extracts key frames and summarizes activity patterns—unusual docking sequences, unexpected cargo handling, or irregular vessel arrivals. Useful for quickly spotting anomalies without reviewing hours of footage.
 
-**Summarizing a long video.** Most videos don't deserve 20 minutes of attention. Hand cue-kit the URL with `--mode summary` (the default) and you get the structure, the key moments, and what was actually said and shown. Faster than watching at 2x.
+**Extracting insights from incident recordings.** 
+After an onboard incident or near miss, upload bridge recordings or monitoring footage. Cue-kit identifies critical moments leading up to the event, highlights what was visible on instruments or surroundings, and reconstructs a timeline of what likely happened—helping with faster post-incident analysis.
 
 ## Modes
 
