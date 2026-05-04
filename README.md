@@ -8,11 +8,11 @@
 [![GitHub Stars](https://img.shields.io/github/stars/atlas-bear/cue-kit?style=social)](https://github.com/atlas-bear/cue-kit/stargazers)
 [![GitHub Issues](https://img.shields.io/github/issues/atlas-bear/cue-kit)](https://github.com/atlas-bear/cue-kit/issues)
 
-A tactical toolkit for turning videos into structured text. Download a video (URL or local file), extract frames, pull a timestamped transcript, and produce output shaped for the job at hand — a quick summary, an intel brief, a training document, lecture notes aligned to slides, or a clean transcript.
+A tactical toolkit for turning video into structured, usable text. Feed it a URL or local file and get extracted frames, a timestamped transcript, and output tailored to your goal — from quick summaries and intel briefs to training docs, lecture notes, or clean transcripts.
 
-Claude can read a webpage, run a script, browse a repo. Out of the box, it can't watch a video — paste a YouTube URL and it has to guess from the title or work off a transcript that misses everything visual.
+LLMs like Claude can read pages, run code, and browse repos — but they can’t truly watch video. Drop in a YouTube link and they’re left guessing from titles or relying on incomplete transcripts that miss the visuals.
 
-cue-kit closes that gap. Hand it a URL or a local file and it produces frames plus a timestamped transcript that an LLM can actually consume. Pair it with the bundled Claude Code skill and `/cue-kit <url> <question>` is a one-liner: Claude `Read`s every frame, sees the transcript, and answers grounded in what's actually on screen and in the audio — not the title, not a guess.
+cue-kit fixes that. It converts video into frames plus a synchronized transcript that LLMs can actually process. With the bundled Claude Code skill, `/cue-kit <url> <question>` becomes a one-liner: Claude analyzes every frame, follows the transcript, and answers based on what’s really happening — on screen and in audio, not guesswork.
 
 > Status: **alpha**. The `summary` and `transcript` modes work today; `training-doc` and `lecture-notes` are scaffolded and under active development.
 
