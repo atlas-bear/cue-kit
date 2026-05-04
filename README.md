@@ -4,6 +4,12 @@ A tactical toolkit for turning videos into structured text. Download a video (UR
 
 > Status: **alpha**. The `summary` and `transcript` modes work today; `training-doc` and `lecture-notes` are scaffolded and under active development.
 
+## Why this exists
+
+Claude can read a webpage, run a script, browse a repo. Out of the box, it can't watch a video — paste a YouTube URL and it has to guess from the title or work off a transcript that misses everything visual.
+
+cue-kit closes that gap. Hand it a URL or a local file and it produces frames plus a timestamped transcript that an LLM can actually consume. Pair it with the bundled Claude Code skill and `/cue-kit <url> <question>` is a one-liner: Claude `Read`s every frame, sees the transcript, and answers grounded in what's actually on screen and in the audio — not the title, not a guess.
+
 ## What it's for
 
 - Watching a video so you don't have to.
@@ -11,14 +17,22 @@ A tactical toolkit for turning videos into structured text. Download a video (UR
 - Capturing lecture-style content where someone narrates over slides — keeping the transcript aligned to each slide.
 - Producing a clean, timestamped transcript for any video.
 
+## Common workflows
+
+**Analyzing someone else's content.** Paste a viral YouTube link and ask `what hook did they open with?` — cue-kit pulls the opening frames and the first lines of transcript, and Claude breaks down the structure. Same playbook for ad creative, podcast intros, competitor launches: anywhere the *how* matters as much as the *what*.
+
+**Diagnosing a bug from a screen recording.** Someone sends a `.mov` of something broken. Run it through cue-kit with the question `what's going wrong?` and Claude finds the frame where the issue appears, describes what's on screen, and often catches the cause without you ever opening the file.
+
+**Summarizing a long video.** Most videos don't deserve 20 minutes of attention. Hand cue-kit the URL with `--mode summary` (the default) and you get the structure, the key moments, and what was actually said and shown. Faster than watching at 2x.
+
 ## Modes
 
 | Mode | What it produces | Status |
 |------|------------------|--------|
 | `summary` | Frame timeline + transcript + key-moment notes (default) | working |
 | `transcript` | Just a clean, timestamped transcript | working |
-| `training-doc` | Structured doc with sections, steps, and key terms | scaffolded |
-| `lecture-notes` | Transcript grouped under detected slides (with slide OCR) | scaffolded |
+| `training-doc` | Raw frames + transcript + a suggested LLM prompt; downstream model produces the formatted doc | scaffolded |
+| `lecture-notes` | Transcript grouped under detected slides; falls back to ungrouped transcript while slide detection is stubbed | scaffolded |
 
 ## Install
 
@@ -83,6 +97,34 @@ cue-kit https://youtu.be/<id> --start 2:15 --end 5:00
 
 Output goes to `--out-dir` if specified, otherwise a temp directory printed at the end of the run.
 
+## CLI flags
+
+| Flag | Default | What it does |
+|------|---------|--------------|
+| `--mode {summary,transcript,training-doc,lecture-notes}` | `summary` | Output shape |
+| `--start T` / `--end T` | none | Focus on a section. Accepts `SS`, `MM:SS`, or `HH:MM:SS`. Triggers a denser frame budget. |
+| `--max-frames N` | `80` | Cap on frame count. Hard ceiling 100. |
+| `--resolution W` | `512` | Frame width in pixels. Bump to `1024` if Claude needs to read on-screen text. |
+| `--fps F` | auto | Override the auto-scaled fps. Capped at `2.0`. |
+| `--out-dir PATH` | tmp | Working directory. Defaults to a fresh temp dir. |
+| `--no-whisper` | off | Disable the Whisper fallback. Frames-only if no native captions. |
+| `--whisper {groq,openai}` | auto | Force a backend. Default: prefer Groq, fall back to OpenAI. |
+
+From the Claude Code skill, the same flags work alongside a question:
+
+```
+/cue-kit https://youtu.be/<id> --start 0:00 --end 0:30 what hook did they open with?
+```
+
+## How it works
+
+1. **Source.** A URL (anything `yt-dlp` supports — YouTube, Loom, TikTok, X, Instagram, hundreds more) or a local file (`.mp4`, `.mov`, `.mkv`, `.webm`, plus a few others — full list in `download.VIDEO_EXTS`).
+2. **Download.** `yt-dlp` fetches into a temp working directory; local files are probed in place, no copy.
+3. **Frames.** `ffmpeg` extracts at an auto-scaled rate. The frame budget is duration-aware — ≤30s gets ~30 frames, 30-60s gets ~40, 1-3min gets ~60, 3-10min gets ~80, longer gets 100 sparsely. Hard caps: 2 fps, 100 frames. JPEGs at 512px wide by default; bump with `--resolution 1024` to read on-screen text.
+4. **Transcript.** First try: `yt-dlp` pulls native captions (manual or auto-generated) — free, fast, and good enough for most public videos. Fallback: extract a mono 16 kHz mp3 and ship it to Whisper — Groq's `whisper-large-v3` (preferred — cheaper and faster) or OpenAI's `whisper-1`.
+5. **Output.** The mode renderer prints frame paths with `t=MM:SS` markers and a timestamped transcript. From the skill, Claude `Read`s each frame in parallel — JPEGs render directly as images in its context — and answers grounded in what's actually on screen and in the audio.
+6. **Working directory.** Printed at the end of the run. Not auto-cleaned today (see Roadmap) — `rm -rf` it manually when you're done with follow-ups.
+
 ## Architecture
 
 ```
@@ -115,6 +157,8 @@ The pipeline is mode-agnostic: it always produces `(frames, transcript_segments,
 - [ ] Optional vision-model captioning of frames (alternative to OCR)
 - [ ] Output formatters: PDF, DOCX
 - [ ] Windows install path
+- [ ] Zero-config install: bootstrap `ffmpeg` and `yt-dlp` via `brew` on macOS first run; print exact `apt` / `winget` commands on Linux and Windows
+- [ ] Skill-driven cleanup of the temp working directory after a run with no follow-ups
 
 ## License
 
