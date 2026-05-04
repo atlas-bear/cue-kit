@@ -162,4 +162,9 @@ The pipeline is mode-agnostic: it always produces `(frames, transcript_segments,
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+cue-kit is **dual-licensed**:
+
+- **AGPLv3** for open-source use — see [LICENSE](LICENSE). Anyone running a modified version as a network service must release their changes under the same license.
+- **Commercial license** available for proprietary use, private modifications, or any case where the AGPL's terms don't fit. Contact [ryan.clontz@atlasbear.co](mailto:ryan.clontz@atlasbear.co). A starting-point template lives at [COMMERCIAL-LICENSE-TEMPLATE.md](COMMERCIAL-LICENSE-TEMPLATE.md).
+
+Copyright © 2026 Ryan Clontz.
