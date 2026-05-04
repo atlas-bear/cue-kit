@@ -169,6 +169,16 @@ The pipeline is mode-agnostic: it always produces `(frames, transcript_segments,
 - [ ] Zero-config install: bootstrap `ffmpeg` and `yt-dlp` via `brew` on macOS first run; print exact `apt` / `winget` commands on Linux and Windows
 - [ ] Skill-driven cleanup of the temp working directory after a run with no follow-ups
 
+## Inspiration & Related Work
+
+- [claude-video](https://github.com/bradautomates/claude-video) — explores enabling Claude to work directly with video inputs  
+- OpenAI Whisper — a widely used foundation for speech-to-text transcription  
+- Google Video AI — a broader take on extracting structured information from video  
+- LangChain — tooling for building structured workflows around LLMs  
+- NotebookLM — an example of turning raw content into structured, usable knowledge  
+
+cue-kit builds on similar ideas but focuses on turning video into structured, task-ready outputs for downstream use.
+
 ## License
 
 cue-kit is **dual-licensed**:
