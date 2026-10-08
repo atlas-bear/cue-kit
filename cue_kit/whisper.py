@@ -22,8 +22,8 @@ import uuid
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-from cue_kit import config
-
+from cue_kit import __version__, config
+from cue_kit.errors import CueKitError
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
 GROQ_MODEL = "whisper-large-v3"
@@ -32,8 +32,10 @@ OPENAI_ENDPOINT = "https://api.openai.com/v1/audio/transcriptions"
 OPENAI_MODEL = "whisper-1"
 
 MAX_ATTEMPTS = 4
-MAX_429_RETRIES = 2
+MAX_429_RETRIES = 2  # retries after a rate-limit response, within MAX_ATTEMPTS
 RETRY_BASE_DELAY = 2.0
+AUDIO_TIMEOUT = 900
+USER_AGENT = f"cue-kit/{__version__} (+https://github.com/atlas-bear/cue-kit)"
 
 
 def load_api_key(preferred: str | None = None) -> tuple[str, str] | tuple[None, None]:
@@ -56,7 +58,7 @@ def load_api_key(preferred: str | None = None) -> tuple[str, str] | tuple[None, 
 def extract_audio(video_path: str, out_path: Path) -> Path:
     """Extract mono 16kHz 64kbps mp3 — ~480 kB/min, fits any Whisper limit."""
     if shutil.which("ffmpeg") is None:
-        raise SystemExit("ffmpeg is not installed. See README install instructions.")
+        raise CueKitError("ffmpeg is not installed. See README install instructions.")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = [
@@ -72,37 +74,47 @@ def extract_audio(video_path: str, out_path: Path) -> Path:
         "-b:a", "64k",
         str(out_path),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=AUDIO_TIMEOUT,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise CueKitError(f"ffmpeg audio extraction timed out after {AUDIO_TIMEOUT}s") from exc
     if result.returncode != 0:
-        raise SystemExit(f"ffmpeg audio extraction failed: {result.stderr.strip()}")
+        raise CueKitError(f"ffmpeg audio extraction failed: {result.stderr.strip()}")
     if not out_path.exists() or out_path.stat().st_size == 0:
-        raise SystemExit("ffmpeg produced no audio — video may have no audio track")
+        raise CueKitError("ffmpeg produced no audio — video may have no audio track")
     return out_path
 
 
 def _build_multipart(fields: dict[str, str], file_path: Path) -> tuple[bytes, str]:
     """Assemble a multipart/form-data body the Whisper APIs accept."""
     boundary = f"----CueKitBoundary{uuid.uuid4().hex}"
-    eol = b"\r\n"
+    mimetype = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
     buf = io.BytesIO()
 
-    for name, value in fields.items():
-        buf.write(f"--{boundary}".encode()); buf.write(eol)
-        buf.write(f'Content-Disposition: form-data; name="{name}"'.encode()); buf.write(eol)
-        buf.write(eol)
-        buf.write(str(value).encode()); buf.write(eol)
+    def line(text: str = "") -> None:
+        buf.write(text.encode() + b"\r\n")
 
-    mimetype = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
-    buf.write(f"--{boundary}".encode()); buf.write(eol)
-    buf.write(
-        f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"'.encode()
-    )
-    buf.write(eol)
-    buf.write(f"Content-Type: {mimetype}".encode()); buf.write(eol)
-    buf.write(eol)
+    for name, value in fields.items():
+        line(f"--{boundary}")
+        line(f'Content-Disposition: form-data; name="{name}"')
+        line()
+        line(str(value))
+
+    line(f"--{boundary}")
+    line(f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"')
+    line(f"Content-Type: {mimetype}")
+    line()
     buf.write(file_path.read_bytes())
-    buf.write(eol)
-    buf.write(f"--{boundary}--".encode()); buf.write(eol)
+    line()
+    line(f"--{boundary}--")
 
     return buf.getvalue(), boundary
 
@@ -110,14 +122,11 @@ def _build_multipart(fields: dict[str, str], file_path: Path) -> tuple[bytes, st
 def _read_error_body(exc: urllib.error.HTTPError) -> str:
     try:
         body = exc.read()
-    except Exception:
+    except OSError:
         return ""
     if not body:
         return ""
-    try:
-        return f" — {body.decode('utf-8', errors='replace')[:400]}"
-    except Exception:
-        return ""
+    return f" — {body.decode('utf-8', errors='replace')[:400]}"
 
 
 def _retry_after(exc: urllib.error.HTTPError) -> float | None:
@@ -139,7 +148,7 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path) -> 
         # Groq sits behind Cloudflare — the default `Python-urllib/3.x` UA
         # trips WAF rule 1010 (403) before auth even runs. Any non-default
         # UA clears it; we identify honestly.
-        "User-Agent": "cue-kit/0.1 (+github.com/cue-kit; python-urllib)",
+        "User-Agent": USER_AGENT,
     }
 
     context = ssl.create_default_context()
@@ -157,12 +166,12 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path) -> 
             last_exc, last_detail = exc, detail
 
             if 400 <= exc.code < 500 and exc.code != 429:
-                raise SystemExit(f"Whisper request failed: {exc}{detail}")
+                raise CueKitError(f"Whisper request failed: {exc}{detail}") from exc
 
             if exc.code == 429:
                 rate_limit_hits += 1
-                if rate_limit_hits >= MAX_429_RETRIES:
-                    raise SystemExit(f"Whisper request failed: {exc}{detail}")
+                if rate_limit_hits > MAX_429_RETRIES:
+                    raise CueKitError(f"Whisper request failed: {exc}{detail}") from exc
                 delay = _retry_after(exc) or RETRY_BASE_DELAY * (2 ** attempt) + 1
             else:
                 delay = RETRY_BASE_DELAY * (2 ** attempt)
@@ -190,9 +199,11 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path) -> 
         try:
             return json.loads(payload)
         except json.JSONDecodeError as exc:
-            raise SystemExit(f"Whisper returned non-JSON response: {exc}: {payload[:200]}")
+            raise CueKitError(
+                f"Whisper returned non-JSON response: {exc}: {payload[:200]}"
+            ) from exc
 
-    raise SystemExit(
+    raise CueKitError(
         f"Whisper request failed after {MAX_ATTEMPTS} attempts: {last_exc}{last_detail}"
     )
 
@@ -231,9 +242,9 @@ def transcribe_video(
         api_key = api_key or detected_key
 
     if not backend or not api_key:
-        raise SystemExit(
+        raise CueKitError(
             "No Whisper API key available. Set GROQ_API_KEY (preferred) or OPENAI_API_KEY "
-            "in the environment or in ~/.config/cue-kit/.env."
+            f"in the environment or in {config.CONFIG_FILE}."
         )
 
     print(f"[cue-kit] extracting audio for Whisper ({backend})…", file=sys.stderr)
@@ -246,11 +257,11 @@ def transcribe_video(
     elif backend == "openai":
         response = _post_whisper(OPENAI_ENDPOINT, api_key, OPENAI_MODEL, audio_path)
     else:
-        raise SystemExit(f"Unknown whisper backend: {backend}")
+        raise CueKitError(f"Unknown whisper backend: {backend}")
 
     segments = _segments_from_response(response)
     if not segments:
-        raise SystemExit("Whisper returned no transcript segments")
+        raise CueKitError("Whisper returned no transcript segments")
 
     print(f"[cue-kit] transcribed {len(segments)} segments via {backend}", file=sys.stderr)
     return segments, backend

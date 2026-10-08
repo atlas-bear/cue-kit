@@ -4,29 +4,46 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cue-kit"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A tactical toolkit for turning videos into structured text — transcripts, training docs, lecture notes, and more."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
-authors = [{ name = "Ryan Clontz" }]
+authors = [{ name = "AB//LABS" }]
 keywords = ["video", "transcription", "whisper", "yt-dlp", "ffmpeg", "training", "lectures", "claude"]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Environment :: Console",
     "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Video",
     "Topic :: Text Processing",
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/atlas-bear/cue-kit"
+Repository = "https://github.com/atlas-bear/cue-kit"
+Issues = "https://github.com/atlas-bear/cue-kit/issues"
+Changelog = "https://github.com/atlas-bear/cue-kit/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 ocr = ["pytesseract>=0.3.10", "Pillow>=10.0"]
-dev = ["pytest>=8.0", "ruff>=0.5"]
+dev = ["pytest>=8.0", "ruff>=0.16,<0.17", "build>=1.2"]
 
 [project.scripts]
 cue-kit = "cue_kit.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "cue_kit.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["cue_kit*"]
@@ -34,3 +51,9 @@ include = ["cue_kit*"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "BLE", "PLW1510", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
