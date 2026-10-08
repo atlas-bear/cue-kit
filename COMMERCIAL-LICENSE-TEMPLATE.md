@@ -2,7 +2,7 @@
 
 > ⚠️ **TEMPLATE ONLY — NOT A SIGNED AGREEMENT.**
 >
-> This document is a *starting point* for a commercial license agreement between the author of cue-kit ("Licensor") and a client ("Licensee"). It is **not** legal advice and has **not** been reviewed by an attorney. **Do not execute this document without review by a qualified lawyer in the relevant jurisdiction.** Terms around scope, fees, term, indemnification, and governing law in particular vary widely between deals and have meaningful legal consequences. Treat the brackets `[LIKE THIS]` as placeholders that must be filled in or struck.
+> This document is a *starting point* for a commercial license agreement between AB//LABS, the copyright holder of cue-kit ("Licensor") and a client ("Licensee"). It is **not** legal advice and has **not** been reviewed by an attorney. **Do not execute this document without review by a qualified lawyer in the relevant jurisdiction.** Terms around scope, fees, term, indemnification, and governing law in particular vary widely between deals and have meaningful legal consequences. Treat the brackets `[LIKE THIS]` as placeholders that must be filled in or struck.
 
 ---
 
@@ -10,7 +10,7 @@
 
 This Commercial License Agreement (the "Agreement") is entered into on **[DATE]** ("Effective Date") between:
 
-- **Licensor:** Ryan Clontz, [ADDRESS], hereinafter "Licensor"; and
+- **Licensor:** AB//LABS [REGISTERED LEGAL ENTITY NAME — confirm before signing], [ADDRESS], hereinafter "Licensor"; and
 - **Licensee:** [CLIENT LEGAL NAME], [ADDRESS], hereinafter "Licensee".
 
 ## 2. Definitions
@@ -36,7 +36,7 @@ Licensee's exercise of the rights granted in Section 3 is **independent of and e
 
 Licensee agrees to preserve the following notice in [source-code headers / product "About" page / public documentation, as applicable]:
 
-> *Includes cue-kit by Ryan Clontz — https://github.com/[YOUR-HANDLE]/cue-kit*
+> *Includes cue-kit by AB//LABS — https://github.com/atlas-bear/cue-kit*
 
 [Strike this section if Licensee has negotiated a white-label exception.]
 
@@ -90,11 +90,11 @@ This Agreement is governed by and construed under the laws of **[JURISDICTION]**
 
 **IN WITNESS WHEREOF**, the parties have executed this Agreement as of the Effective Date.
 
-**Licensor**
+**Licensor** — AB//LABS
 
 Signature: ____________________________  Date: __________
 
-Printed Name: Ryan Clontz
+Printed Name: ________________________
 
 Title: _______________________________
 

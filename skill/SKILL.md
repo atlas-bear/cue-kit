@@ -25,10 +25,10 @@ This skill wraps the `cue-kit` CLI. Pick the right `--mode` for the user's inten
 **Step 2 — run the CLI.**
 
 ```bash
-cue-kit "<source>" --mode <mode> [--start T] [--end T] [--max-frames N] [--resolution W]
+cue-kit "<source>" --mode <mode> [--start T] [--end T] [--max-frames N] [--resolution W] [--fps F] [--no-whisper] [--whisper groq|openai]
 ```
 
-If `cue-kit` isn't on PATH, fall back to `python3 -m cue_kit` from the cue-kit project directory.
+If `cue-kit` isn't on PATH, fall back to `python3 -m cue_kit` (`py -m cue_kit` on Windows). Run `cue-kit --help` for all flags. A non-zero exit means the CLI printed an `[cue-kit] error: ...` line on stderr — relay it to the user.
 
 **Step 3 — Read each frame path** the report lists, in parallel, so you see them together.
 
@@ -36,7 +36,7 @@ If `cue-kit` isn't on PATH, fall back to `python3 -m cue_kit` from the cue-kit p
 
 ## Configuration
 
-Whisper API keys (only needed when a video has no native captions) live in `~/.config/cue-kit/.env`:
+Whisper API keys (only needed when a video has no native captions) live in `~/.config/cue-kit/.env` on macOS/Linux, or `%APPDATA%\cue-kit\.env` on Windows:
 
 ```
 GROQ_API_KEY=...
@@ -49,3 +49,8 @@ If the user hits "no transcript available" and wants Whisper, ask them via `AskU
 
 - Hard cap: 100 frames at 2 fps. The CLI auto-budgets per duration; videos >10 min get a sparse-coverage warning. For long videos with a specific question, pass `--start`/`--end`.
 - Token cost is dominated by frames at high resolutions — leave `--resolution 512` unless the user needs to read on-screen text.
+- The Whisper fallback uploads the video's audio to Groq or OpenAI. For sensitive material, pass `--no-whisper`.
+
+## License
+
+This skill file is MIT-licensed so it can be copied freely into any Claude Code setup. The cue-kit CLI it invokes is licensed separately (AGPLv3 or commercial — see the repository README).

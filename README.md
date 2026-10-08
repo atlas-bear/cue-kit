@@ -1,9 +1,11 @@
 # cue-kit
 
-![Alt text](https://github.com/user-attachments/assets/9c78f406-be76-494c-82ff-32c450aed745 "Screenshot of cue-kit")
+![Terminal session showing cue-kit producing a video report with frame timeline and transcript](https://github.com/user-attachments/assets/9c78f406-be76-494c-82ff-32c450aed745 "Screenshot of cue-kit")
 
+[![CI](https://github.com/atlas-bear/cue-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/atlas-bear/cue-kit/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/cue-kit.svg)](https://pypi.org/project/cue-kit/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)]()
+[![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)](#modes)
 [![Code style: ruff](https://img.shields.io/badge/lint-ruff-46aef7.svg)](https://github.com/astral-sh/ruff)
 [![GitHub Stars](https://img.shields.io/github/stars/atlas-bear/cue-kit?style=social)](https://github.com/atlas-bear/cue-kit/stargazers)
 [![GitHub Issues](https://img.shields.io/github/issues/atlas-bear/cue-kit)](https://github.com/atlas-bear/cue-kit/issues)
@@ -38,52 +40,88 @@ After an onboard incident or near miss, upload bridge recordings or monitoring f
 
 | Mode | What it produces | Status |
 |------|------------------|--------|
-| `summary` | Frame timeline + transcript + key-moment notes (default) | working |
+| `summary` | Source metadata, frame timeline, and timestamped transcript (default) | working |
 | `transcript` | Just a clean, timestamped transcript | working |
 | `training-doc` | Raw frames + transcript + a suggested LLM prompt; downstream model produces the formatted doc | scaffolded |
 | `lecture-notes` | Transcript grouped under detected slides; falls back to ungrouped transcript while slide detection is stubbed | scaffolded |
 
 ## Install
 
-Requires Python 3.10+, `ffmpeg`, and `yt-dlp`. macOS via Homebrew:
+cue-kit runs on **macOS, Linux, and Windows** with Python 3.10+. It shells out to two system tools, `ffmpeg` (a full build, including `ffprobe` and the `libmp3lame` encoder — all standard packages qualify) and `yt-dlp`.
+
+**macOS** (Homebrew):
 
 ```bash
 brew install ffmpeg yt-dlp
 ```
 
-Linux:
+**Linux** (Debian/Ubuntu):
 
 ```bash
 sudo apt install ffmpeg
-pip install --user yt-dlp
+python3 -m pip install --user yt-dlp
 ```
+
+**Windows** (PowerShell):
+
+```powershell
+winget install Gyan.FFmpeg yt-dlp.yt-dlp
+```
+
+Open a new terminal afterwards so the updated `PATH` is picked up.
 
 Then install cue-kit itself:
 
 ```bash
-git clone https://github.com/<your-handle>/cue-kit.git
-cd cue-kit
-pip install -e .
+pip install cue-kit                 # latest release from PyPI
+# or pin a specific release straight from GitHub:
+pip install "git+https://github.com/atlas-bear/cue-kit@v0.2.0"
 ```
 
-For slide-OCR (`lecture-notes` mode):
+[`pipx`](https://pipx.pypa.io/) (`pipx install cue-kit`) keeps it in an isolated environment and is the tidiest option for a CLI.
+
+> `yt-dlp` breaks periodically as video sites change. If URL downloads start failing, update it first (`brew upgrade yt-dlp`, `pip install -U yt-dlp`, or `winget upgrade yt-dlp.yt-dlp`).
+
+For development from a clone:
 
 ```bash
-pip install -e '.[ocr]'
-# plus: brew install tesseract  (or apt install tesseract-ocr)
+git clone https://github.com/atlas-bear/cue-kit.git
+cd cue-kit
+pip install -e '.[dev]'
 ```
 
 ## Configure
 
-Copy `.env.example` to `~/.config/cue-kit/.env` and fill in a Whisper API key (only needed for videos without native captions):
+A Whisper API key is only needed for videos without native captions (most local files). cue-kit reads keys from, in order: process environment, the user config file, then `./.env`.
+
+| OS | Config file |
+|----|-------------|
+| macOS / Linux | `~/.config/cue-kit/.env` |
+| Windows | `%APPDATA%\cue-kit\.env` |
 
 ```bash
+# macOS / Linux
 mkdir -p ~/.config/cue-kit
 cp .env.example ~/.config/cue-kit/.env
 chmod 600 ~/.config/cue-kit/.env
 ```
 
+```powershell
+# Windows
+New-Item -ItemType Directory -Force "$env:APPDATA\cue-kit"
+Copy-Item .env.example "$env:APPDATA\cue-kit\.env"
+```
+
 cue-kit prefers **Groq** (`whisper-large-v3` — cheaper, faster) and falls back to **OpenAI** (`whisper-1`). Set whichever you have.
+
+## Data handling: what leaves your machine
+
+- **Local files with `--no-whisper`:** nothing. All processing (frame extraction, caption parsing) happens locally.
+- **URLs:** `yt-dlp` contacts the hosting site to download the video and any captions.
+- **Whisper fallback:** only when no captions are available *and* an API key is configured, cue-kit extracts the audio track (mono, 16 kHz) and uploads it to Groq or OpenAI for transcription. Video frames are never uploaded by cue-kit.
+- **Working files** (video, frames, audio) stay in the working directory on disk until you delete them.
+
+For sensitive material, pass `--no-whisper` to guarantee no audio leaves the machine. Downstream, whatever reads cue-kit's output (for example, an LLM reading the frames) is governed by that tool's own data policy.
 
 ## Quick start
 
@@ -104,7 +142,7 @@ cue-kit ./talk.mp4 --mode lecture-notes
 cue-kit https://youtu.be/<id> --start 2:15 --end 5:00
 ```
 
-Output goes to `--out-dir` if specified, otherwise a temp directory printed at the end of the run.
+Output goes to `--out-dir` if specified, otherwise a fresh temp directory. The working directory is printed at the start and end of the run. `cue-kit --version` prints the installed version.
 
 ## CLI flags
 
@@ -129,7 +167,7 @@ From the Claude Code skill, the same flags work alongside a question:
 
 1. **Source.** A URL (anything `yt-dlp` supports — YouTube, Loom, TikTok, X, Instagram, hundreds more) or a local file (`.mp4`, `.mov`, `.mkv`, `.webm`, plus a few others — full list in `download.VIDEO_EXTS`).
 2. **Download.** `yt-dlp` fetches into a temp working directory; local files are probed in place, no copy.
-3. **Frames.** `ffmpeg` extracts at an auto-scaled rate. The frame budget is duration-aware — ≤30s gets ~30 frames, 30-60s gets ~40, 1-3min gets ~60, 3-10min gets ~80, longer gets 100 sparsely. Hard caps: 2 fps, 100 frames. JPEGs at 512px wide by default; bump with `--resolution 1024` to read on-screen text.
+3. **Frames.** `ffmpeg` extracts at an auto-scaled rate. The frame budget is duration-aware — up to 30s gets one frame per second (minimum 12, limited by the 2 fps cap), 30-60s gets 40, 1-3 min gets 60, and anything longer gets 80 (the default `--max-frames`; raise it to 100 for long videos). `--start`/`--end` ranges get a denser budget. Hard caps: 2 fps, 100 frames. JPEGs at 512px wide by default; bump with `--resolution 1024` to read on-screen text.
 4. **Transcript.** First try: `yt-dlp` pulls native captions (manual or auto-generated) — free, fast, and good enough for most public videos. Fallback: extract a mono 16 kHz mp3 and ship it to Whisper — Groq's `whisper-large-v3` (preferred — cheaper and faster) or OpenAI's `whisper-1`.
 5. **Output.** The mode renderer prints frame paths with `t=MM:SS` markers and a timestamped transcript. From the skill, Claude `Read`s each frame in parallel — JPEGs render directly as images in its context — and answers grounded in what's actually on screen and in the audio.
 6. **Working directory.** Printed at the end of the run. Not auto-cleaned today (see Roadmap) — `rm -rf` it manually when you're done with follow-ups.
@@ -139,7 +177,8 @@ From the Claude Code skill, the same flags work alongside a question:
 ```
 cue_kit/
 ├── cli.py             # arg parsing, mode dispatch
-├── config.py          # env / .env loading
+├── config.py          # env / .env loading, per-OS config dir
+├── errors.py          # CueKitError (user-facing failures)
 ├── pipeline.py        # download → frames → transcript orchestrator
 ├── download.py        # yt-dlp wrapper, local file resolver
 ├── frames.py          # ffmpeg frame extraction, auto-fps budgeting
@@ -153,11 +192,11 @@ cue_kit/
     └── lecture_notes.py
 ```
 
-The pipeline is mode-agnostic: it always produces `(frames, transcript_segments, metadata)`. Each mode is a renderer that turns that shared payload into its own output shape.
+The pipeline is mode-agnostic: it always produces a `PipelineResult` (frames, transcript segments, metadata). Each mode is a renderer that turns that shared payload into its own output shape.
 
 ## Use as a Claude Code skill
 
-`skill/SKILL.md` is a thin wrapper that lets Claude Code drive cue-kit. Symlink or copy it into your skills directory and Claude can invoke `/cue-kit` with the same modes.
+`skill/SKILL.md` is a thin wrapper that lets Claude Code drive cue-kit. Copy (or symlink) the `skill/` directory to `~/.claude/skills/cue-kit/` (or a project's `.claude/skills/cue-kit/`) and Claude can invoke `/cue-kit` with the same modes. The `cue-kit` CLI must be installed and on `PATH`.
 
 ## Roadmap
 
@@ -165,8 +204,7 @@ The pipeline is mode-agnostic: it always produces `(frames, transcript_segments,
 - [ ] `lecture-notes` mode: scene-change keyframe selection, OCR over slides, transcript grouping
 - [ ] Optional vision-model captioning of frames (alternative to OCR)
 - [ ] Output formatters: PDF, DOCX
-- [ ] Windows install path
-- [ ] Zero-config install: bootstrap `ffmpeg` and `yt-dlp` via `brew` on macOS first run; print exact `apt` / `winget` commands on Linux and Windows
+- [ ] Zero-config install: detect missing `ffmpeg` / `yt-dlp` and print the exact `brew` / `apt` / `winget` command for the current OS
 - [ ] Skill-driven cleanup of the temp working directory after a run with no follow-ups
 
 ## Inspiration & Related Work
@@ -179,9 +217,17 @@ The pipeline is mode-agnostic: it always produces `(frames, transcript_segments,
 
 cue-kit builds on similar ideas but focuses on turning video into structured, task-ready outputs for downstream use.
 
+## Contributing & security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and the release process, [CHANGELOG.md](CHANGELOG.md) for version history, and [SECURITY.md](SECURITY.md) to report a vulnerability privately.
+
 ## License
+
+Copyright © 2025–2026 AB//LABS.
 
 cue-kit is **dual-licensed**:
 
 - **AGPLv3** for open-source use — see [LICENSE](LICENSE). Anyone running a modified version as a network service must release their changes under the same license.
-- **Commercial license** available for proprietary use, private modifications, or any case where the AGPL's terms don't fit. A starting-point template lives at [COMMERCIAL-LICENSE-TEMPLATE.md](COMMERCIAL-LICENSE-TEMPLATE.md).
+- **Commercial license** available for proprietary use, private modifications, or any case where the AGPL's terms don't fit. A starting-point template lives at [COMMERCIAL-LICENSE-TEMPLATE.md](COMMERCIAL-LICENSE-TEMPLATE.md). Contact AB//LABS through the [GitHub organization](https://github.com/atlas-bear).
+
+The Claude Code skill wrapper in [`skill/`](skill/) is separately licensed under the **MIT License** so it can be copied freely into your own Claude Code setup; it contains no cue-kit program code and only invokes the installed CLI.
