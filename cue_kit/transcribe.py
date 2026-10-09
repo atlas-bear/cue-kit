@@ -1,7 +1,9 @@
 """Parse a WebVTT subtitle file into a clean, timestamped transcript.
 
-YouTube auto-subs emit rolling-duplicate cues (each line appears 2-3 times as
-it scrolls). We dedupe consecutive identical cues and merge their time ranges.
+YouTube auto-subs emit rolling cues: each cue repeats the previous cue's last
+line before adding new words, and short "hold" cues repeat it again. We drop
+the carried-over line, then collapse consecutive identical or prefix-extending
+cues and merge their time ranges.
 """
 from __future__ import annotations
 
@@ -9,13 +11,13 @@ import re
 from pathlib import Path
 
 TS_RE = re.compile(
-    r"(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2})[.,](\d{3})"
+    r"(?:(\d+):)?(\d{2}):(\d{2})[.,](\d{3})\s+-->\s+(?:(\d+):)?(\d{2}):(\d{2})[.,](\d{3})"
 )
 TAG_RE = re.compile(r"<[^>]+>")
 
 
-def _to_seconds(h: str, m: str, s: str, ms: str) -> float:
-    return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000.0
+def _to_seconds(h: str | None, m: str, s: str, ms: str) -> float:
+    return int(h or 0) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000.0
 
 
 def parse_vtt(path: str) -> list[dict]:
@@ -23,6 +25,7 @@ def parse_vtt(path: str) -> list[dict]:
     lines = text.splitlines()
 
     segments: list[dict] = []
+    previous_last_line: str | None = None
     i = 0
     while i < len(lines):
         match = TS_RE.match(lines[i])
@@ -34,17 +37,26 @@ def parse_vtt(path: str) -> list[dict]:
         end = _to_seconds(*match.groups()[4:])
         i += 1
 
+        # A cue ends at an empty line; whitespace-only lines are cue content.
         cue_lines: list[str] = []
-        while i < len(lines) and lines[i].strip():
+        while i < len(lines) and lines[i] != "":
             cleaned = TAG_RE.sub("", lines[i]).strip()
             if cleaned:
                 cue_lines.append(cleaned)
             i += 1
 
+        if not cue_lines:
+            continue
+        last_line = cue_lines[-1]
+        if cue_lines[0] == previous_last_line:
+            cue_lines = cue_lines[1:]
+        previous_last_line = last_line
+
         cue_text = " ".join(cue_lines).strip()
         if cue_text:
             segments.append({"start": round(start, 2), "end": round(end, 2), "text": cue_text})
-        i += 1
+        elif segments:
+            segments[-1]["end"] = max(segments[-1]["end"], round(end, 2))
 
     return _dedupe(segments)
 
