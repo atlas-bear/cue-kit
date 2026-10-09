@@ -49,11 +49,19 @@ jobs:
             -f lavfi -i sine=frequency=440:duration=5 \
             -shortest -c:v libx264 -pix_fmt yuv420p -c:a aac "smoke clip.mp4"
           cue-kit --version
-          for mode in summary transcript training-doc lecture-notes; do
+          for mode in summary training-doc lecture-notes; do
             cue-kit "smoke clip.mp4" --mode "$mode" --no-whisper --out-dir "work-$mode" > "out-$mode.md"
           done
           ls work-summary/frames/frame_0001.jpg
           grep -q "# cue-kit: video report" out-summary.md
+          grep -q "## Slide 1" out-lecture-notes.md
+          ls work-lecture-notes/slides/slide_0001.jpg
+          # No captions and no Whisper: transcript mode must fail with exit code 1.
+          set +e
+          cue-kit "smoke clip.mp4" --mode transcript --no-whisper --out-dir work-transcript
+          code=$?
+          set -e
+          test "$code" -eq 1
 
   build:
     runs-on: ubuntu-latest
