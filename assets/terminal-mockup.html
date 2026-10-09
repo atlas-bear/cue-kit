@@ -4,55 +4,74 @@
 <meta charset="utf-8" />
 <title>cue-kit terminal mockup</title>
 <style>
+  /* Window chrome matches the equasis-cli README screenshot (One Dark palette). */
   :root {
-    --bg: #0e1116;
-    --fg: #d7dbe0;
-    --dim: #6b7380;
-    --prompt: #7ee787;
-    --user: #79c0ff;
-    --accent: #ffa657;
-    --muted: #8b949e;
-    --heading: #f0f6fc;
-    --code-bg: #161b22;
-    --warn: #f0883e;
+    --titlebar: #21252b;
+    --bg: #282c34;
+    --fg: #abb2bf;
+    --bright: #e6e6e6;
+    --dim: #7f848e;
+    --rule: #3e4451;
+    --green: #98c379;
+    --blue: #61afef;
+    --orange: #d19a66;
+    --yellow: #e5c07b;
   }
   html, body {
     margin: 0;
     padding: 0;
-    background: #1a1d23;
+    background: transparent;
     font-family: "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
     color: var(--fg);
   }
   .stage {
-    padding: 48px;
-    display: flex;
-    justify-content: center;
+    display: inline-block;
+    padding: 24px 24px 32px;
   }
-  .terminal {
-    width: 900px;
+  .window {
+    width: 860px;
     background: var(--bg);
-    border-radius: 10px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    border-radius: 12px;
+    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.35), 0 10px 28px rgba(0,0,0,0.28);
     overflow: hidden;
   }
+  .titlebar {
+    position: relative;
+    height: 34px;
+    background: var(--titlebar);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dim);
+    font-size: 13px;
+  }
+  .lights {
+    position: absolute;
+    left: 14px;
+    top: 11px;
+    display: flex;
+    gap: 8px;
+  }
+  .lights span { width: 12px; height: 12px; border-radius: 50%; }
+  .lights .close { background: #ff5f56; }
+  .lights .min   { background: #ffbd2e; }
+  .lights .max   { background: #27c93f; }
   .body {
-    padding: 22px 26px 26px;
+    padding: 22px 22px 26px;
     font-size: 13.5px;
     line-height: 1.55;
     white-space: pre-wrap;
     word-break: break-word;
   }
-  .prompt   { color: var(--prompt); }
-  .user     { color: var(--user); }
-  .stderr   { color: var(--muted); }
-  .h1       { color: var(--heading); font-weight: 600; }
-  .h2       { color: var(--heading); font-weight: 600; }
-  .key      { color: var(--accent); font-weight: 600; }
-  .path     { color: var(--user); }
+  .prompt   { color: var(--green); }
+  .user     { color: var(--blue); }
+  .stderr   { color: var(--dim); }
+  .h1, .h2  { color: var(--bright); font-weight: 600; }
+  .key      { color: var(--orange); font-weight: 600; }
+  .path     { color: var(--blue); }
   .dim      { color: var(--dim); }
-  .warn     { color: var(--warn); }
   .fence    { color: var(--dim); }
-  .ts       { color: var(--accent); }
+  .ts       { color: var(--yellow); }
   .cursor {
     display: inline-block;
     width: 8px;
@@ -60,14 +79,13 @@
     background: var(--fg);
     vertical-align: text-bottom;
     margin-left: 2px;
-    animation: blink 1s steps(2, start) infinite;
   }
-  @keyframes blink { to { background: transparent; } }
 </style>
 </head>
 <body>
 <div class="stage">
-  <div class="terminal">
+  <div class="window">
+    <div class="titlebar"><div class="lights"><span class="close"></span><span class="min"></span><span class="max"></span></div>cue-kit</div>
     <div class="body"><span class="prompt">~/briefings</span> <span class="user">$</span> cue-kit ./dark-fleet-briefing.mp4 --mode summary
 <span class="stderr">[cue-kit] working dir: /tmp/cue-kit-9f3a2b</span>
 <span class="stderr">[cue-kit] using local file…</span>
@@ -96,11 +114,7 @@ Frames live at: <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a
 - <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a2b/frames/frame_0004.jpg</span><span class="fence">`</span> (t=<span class="ts">00:17</span>)
 - <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a2b/frames/frame_0005.jpg</span><span class="fence">`</span> (t=<span class="ts">00:23</span>)
 - <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a2b/frames/frame_0006.jpg</span><span class="fence">`</span> (t=<span class="ts">00:28</span>)
-- <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a2b/frames/frame_0007.jpg</span><span class="fence">`</span> (t=<span class="ts">00:34</span>)
-- <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a2b/frames/frame_0008.jpg</span><span class="fence">`</span> (t=<span class="ts">00:39</span>)
-- <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a2b/frames/frame_0009.jpg</span><span class="fence">`</span> (t=<span class="ts">00:45</span>)
-- <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a2b/frames/frame_0010.jpg</span><span class="fence">`</span> (t=<span class="ts">00:51</span>)
-<span class="dim">  … 70 more frames …</span>
+<span class="dim">  … 74 more frames …</span>
 
 <span class="h2">## Transcript</span>
 
@@ -112,11 +126,7 @@ Frames live at: <span class="fence">`</span><span class="path">/tmp/cue-kit-9f3a
 [<span class="ts">00:11</span>] eastern Mediterranean — starting with AIS gaps long enough to
 [<span class="ts">00:17</span>] cover a ship-to-ship transfer, but short enough that a casual
 [<span class="ts">00:23</span>] reviewer might write them off as a routine signal dropout.
-[<span class="ts">00:29</span>] The first signature is the loiter-then-vanish pattern. A vessel
-[<span class="ts">00:35</span>] slows below four knots, holds station for roughly forty minutes,
-[<span class="ts">00:41</span>] then drops AIS entirely. When it reappears, the draft has shifted
-[<span class="ts">00:48</span>] by half a meter and the declared destination has been rewritten.
-<span class="dim">… 109 more lines …</span>
+<span class="dim">… 113 more lines …</span>
 <span class="fence">```</span>
 
 ---

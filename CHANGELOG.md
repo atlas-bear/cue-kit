@@ -10,7 +10,8 @@ releases may include breaking changes; they will always be called out below.
 ## [0.2.1] - 2026-10-09
 
 ### Changed
-- Replaced the README screenshot with one that matches the current report format, and
+- Replaced the README screenshot with one that matches the current report format, styled
+  as a macOS terminal window to match AB//LABS' other projects, and
   host it in the repository (`assets/cue-kit-terminal.png`) so it renders on PyPI too.
 
 ## [0.2.0] - 2026-10-08

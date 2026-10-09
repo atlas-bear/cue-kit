@@ -6,5 +6,6 @@ Source files for repository images. Not part of the installed package.
   output for an illustrative 7½-minute local video transcribed via Groq Whisper; the
   video and transcript text are fictional.
 - `cue-kit-terminal.png` — the rendered screenshot used in the README. Regenerate it by
-  capturing the `.stage` element of the HTML at 2× scale (e.g. with Playwright) and keep
+  capturing the `.stage` element of the HTML at 2× scale with a transparent background
+  (e.g. Playwright `screenshot(omit_background=True)`) and keep
   the mockup in sync when the report format changes.
