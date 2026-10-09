@@ -1,19 +1,22 @@
 """Transcript-only mode: just the timestamped transcript, nothing else."""
 from __future__ import annotations
 
-import sys
-
+from cue_kit.errors import CueKitError
 from cue_kit.frames import format_time
 from cue_kit.pipeline import PipelineResult
 
 
 def render(r: PipelineResult) -> None:
     if not r.transcript_text:
-        print(
-            "[cue-kit] no transcript available (no captions and Whisper fallback unavailable)",
-            file=sys.stderr,
+        if r.transcript_source and r.focused:
+            raise CueKitError(
+                f"no transcript lines fall inside {format_time(r.effective_start)}"
+                f"-{format_time(r.effective_end)}"
+            )
+        raise CueKitError(
+            "no transcript available: the video has no captions and the Whisper fallback "
+            "was unavailable (no API key set, or --no-whisper was used)"
         )
-        return
 
     info = r.info
     title = info.get("title") or r.source

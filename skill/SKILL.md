@@ -16,7 +16,7 @@ This skill wraps the `cue-kit` CLI. Pick the right `--mode` for the user's inten
 - **`summary`** *(default)* — full report with frame timeline + transcript. Use when the user asks "what's in this video?" or any open-ended question.
 - **`transcript`** — clean timestamped transcript only. Use when they want the spoken content, no frames.
 - **`training-doc`** — structured training document scaffold. Use for recorded screencasts / onboarding / how-to videos. After running, format the raw output into the polished doc shape described in the CLI output.
-- **`lecture-notes`** — transcript grouped under detected slides. Use for talks, lectures, presentations where someone narrates over slides.
+- **`lecture-notes`** — one image per detected slide, with the narration spoken while it was on screen. Use for screen-recorded talks, lectures, and webinars where someone narrates over slides. Not for camera-filmed talks (use `summary`).
 
 ## How to invoke
 
@@ -25,14 +25,14 @@ This skill wraps the `cue-kit` CLI. Pick the right `--mode` for the user's inten
 **Step 2 — run the CLI.**
 
 ```bash
-cue-kit "<source>" --mode <mode> [--start T] [--end T] [--max-frames N] [--resolution W] [--fps F] [--no-whisper] [--whisper groq|openai]
+cue-kit "<source>" --mode <mode> [--start T] [--end T] [--max-frames N] [--resolution W] [--fps F] [--no-whisper] [--whisper groq|openai] [--slide-tolerance X] [--ocr]
 ```
 
 If `cue-kit` isn't on PATH, fall back to `python3 -m cue_kit` (`py -m cue_kit` on Windows). Run `cue-kit --help` for all flags. A non-zero exit means the CLI printed an `[cue-kit] error: ...` line on stderr — relay it to the user.
 
 **Step 3 — Read each frame path** the report lists, in parallel, so you see them together.
 
-**Step 4 — answer.** For `summary`/`transcript`, answer directly with timestamp citations. For `training-doc`, follow the suggested LLM prompt at the bottom of the CLI output to produce the formatted doc. For `lecture-notes`, the per-slide structure is already in place — fill in any missing analysis.
+**Step 4 — answer.** For `summary`/`transcript`, answer directly with timestamp citations. For `training-doc`, follow the suggested LLM prompt at the bottom of the CLI output to produce the formatted doc. For `lecture-notes`, `Read` each slide image listed under its `## Slide N` heading; the per-slide structure and narration are already in place — summarize or answer per slide. If the CLI warns that no slides were found, or reports far more slides than the talk plausibly has, rerun with `--slide-tolerance 0.01` (webcam insets, cursor movement) or switch to `summary`. Add `--ocr` only if the user needs exact slide text and it's installed.
 
 ## Configuration
 

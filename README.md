@@ -16,7 +16,7 @@ LLMs like Claude can read pages, run code, and browse repos — but they can’t
 
 cue-kit fixes that. It converts video into frames plus a synchronized transcript that LLMs can actually process. With the bundled Claude Code skill, `/cue-kit <url> <question>` becomes a one-liner: Claude analyzes every frame, follows the transcript, and answers based on what’s really happening — on screen and in audio, not guesswork.
 
-> Status: **alpha**. The `summary` and `transcript` modes work today; `training-doc` and `lecture-notes` are scaffolded and under active development.
+> Status: **alpha**. The `summary`, `transcript`, and `lecture-notes` modes work today; `training-doc` is scaffolded and under active development.
 
 ## What it's for
 
@@ -43,7 +43,7 @@ After an onboard incident or near miss, upload bridge recordings or monitoring f
 | `summary` | Source metadata, frame timeline, and timestamped transcript (default) | working |
 | `transcript` | Just a clean, timestamped transcript | working |
 | `training-doc` | Raw frames + transcript + a suggested LLM prompt; downstream model produces the formatted doc | scaffolded |
-| `lecture-notes` | Transcript grouped under detected slides; falls back to ungrouped transcript while slide detection is stubbed | scaffolded |
+| `lecture-notes` | One image per detected slide with the narration spoken while it was on screen; optional OCR of slide text | working |
 
 ## Install
 
@@ -75,7 +75,7 @@ Then install cue-kit itself:
 ```bash
 pip install cue-kit                 # latest release from PyPI
 # or pin a specific release straight from GitHub:
-pip install "git+https://github.com/atlas-bear/cue-kit@v0.2.1"
+pip install "git+https://github.com/atlas-bear/cue-kit@v0.3.0"
 ```
 
 [`pipx`](https://pipx.pypa.io/) (`pipx install cue-kit`) keeps it in an isolated environment and is the tidiest option for a CLI.
@@ -88,6 +88,15 @@ For development from a clone:
 git clone https://github.com/atlas-bear/cue-kit.git
 cd cue-kit
 pip install -e '.[dev]'
+```
+
+Optional slide OCR for `lecture-notes --ocr` needs the `[ocr]` extra plus the `tesseract` binary:
+
+```bash
+pip install 'cue-kit[ocr]'
+# macOS: brew install tesseract
+# Linux: sudo apt install tesseract-ocr
+# Windows: winget install UB-Mannheim.TesseractOCR
 ```
 
 ## Configure
@@ -156,6 +165,8 @@ Output goes to `--out-dir` if specified, otherwise a fresh temp directory. The w
 | `--out-dir PATH` | tmp | Working directory. Defaults to a fresh temp dir. |
 | `--no-whisper` | off | Disable the Whisper fallback. Frames-only if no native captions. |
 | `--whisper {groq,openai}` | auto | Force a backend. Default: prefer Groq, fall back to OpenAI. |
+| `--slide-tolerance X` | `0.003` | `lecture-notes`: how much on-screen change is ignored when deciding the picture is holding still. Raise it (e.g. `0.01`) for webcam insets or cursor movement; lower it if separate slides get merged. |
+| `--ocr` | off | `lecture-notes`: OCR each slide image and include the slide text. Needs the `[ocr]` extra and `tesseract`. |
 
 From the Claude Code skill, the same flags work alongside a question:
 
@@ -172,6 +183,16 @@ From the Claude Code skill, the same flags work alongside a question:
 5. **Output.** The mode renderer prints frame paths with `t=MM:SS` markers and a timestamped transcript. From the skill, Claude `Read`s each frame in parallel — JPEGs render directly as images in its context — and answers grounded in what's actually on screen and in the audio.
 6. **Working directory.** Printed at the end of the run. Not auto-cleaned today (see Roadmap) — `rm -rf` it manually when you're done with follow-ups.
 
+## Lecture notes: how slide detection works
+
+`lecture-notes` finds the stretches where the picture holds still for at least a second (ffmpeg's `freezedetect` filter). Each one is treated as a slide, and fades, animations and transitions are the gaps between them. For each slide it saves one image from the *end* of the still stretch, so bullet-by-bullet builds show up completed. Adjacent slides that barely differ, such as a moving cursor or a finished build, are merged. Every transcript line is then filed under the slide that was on screen when it was spoken.
+
+It works best on **screen-recorded slides**: Zoom or Teams shares, PowerPoint or Keynote recordings, webinar exports. Expect these limits:
+
+- **Software walkthroughs and screencasts** produce one entry per distinct screen state, which can be many more entries than a slide deck would.
+- **Camera-filmed talks** (a phone in the audience, a moving stage camera) never hold still, so no slides are found. cue-kit warns and returns a single entry; use `summary` mode instead.
+- **Webcam insets** can split a slide into two. Raise `--slide-tolerance` to `0.01` if you see near-duplicates.
+
 ## Architecture
 
 ```
@@ -184,7 +205,7 @@ cue_kit/
 ├── frames.py          # ffmpeg frame extraction, auto-fps budgeting
 ├── transcribe.py      # WebVTT parsing, dedup, range filtering
 ├── whisper.py         # Groq / OpenAI Whisper API clients (stdlib only)
-├── slides.py          # scene-change detection + slide OCR (lecture-notes)
+├── slides.py          # slide detection, slide OCR, narration grouping (lecture-notes)
 └── modes/
     ├── summary.py
     ├── transcript.py
@@ -201,7 +222,6 @@ The pipeline is mode-agnostic: it always produces a `PipelineResult` (frames, tr
 ## Roadmap
 
 - [ ] `training-doc` mode: section detection, step extraction, glossary
-- [ ] `lecture-notes` mode: scene-change keyframe selection, OCR over slides, transcript grouping
 - [ ] Optional vision-model captioning of frames (alternative to OCR)
 - [ ] Output formatters: PDF, DOCX
 - [ ] Zero-config install: detect missing `ffmpeg` / `yt-dlp` and print the exact `brew` / `apt` / `winget` command for the current OS
