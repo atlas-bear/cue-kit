@@ -1,6 +1,6 @@
 # cue-kit
 
-![Terminal session showing cue-kit producing a video report with frame timeline and transcript](https://github.com/user-attachments/assets/9c78f406-be76-494c-82ff-32c450aed745 "Screenshot of cue-kit")
+![Terminal session showing cue-kit producing a video report with frame timeline and transcript](https://raw.githubusercontent.com/atlas-bear/cue-kit/main/assets/cue-kit-terminal.png "Screenshot of cue-kit")
 
 [![CI](https://github.com/atlas-bear/cue-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/atlas-bear/cue-kit/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/cue-kit.svg)](https://pypi.org/project/cue-kit/)
@@ -75,7 +75,7 @@ Then install cue-kit itself:
 ```bash
 pip install cue-kit                 # latest release from PyPI
 # or pin a specific release straight from GitHub:
-pip install "git+https://github.com/atlas-bear/cue-kit@v0.2.0"
+pip install "git+https://github.com/atlas-bear/cue-kit@v0.2.1"
 ```
 
 [`pipx`](https://pipx.pypa.io/) (`pipx install cue-kit`) keeps it in an isolated environment and is the tidiest option for a CLI.

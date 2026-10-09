@@ -7,6 +7,12 @@ releases may include breaking changes; they will always be called out below.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-09
+
+### Changed
+- Replaced the README screenshot with one that matches the current report format, and
+  host it in the repository (`assets/cue-kit-terminal.png`) so it renders on PyPI too.
+
 ## [0.2.0] - 2026-10-08
 
 ### Added
@@ -37,5 +43,6 @@ releases may include breaking changes; they will always be called out below.
 
 - Initial scaffold: `summary` and `transcript` modes, scaffolded `training-doc` and `lecture-notes` modes, Groq/OpenAI Whisper fallback, and the Claude Code skill wrapper.
 
-[Unreleased]: https://github.com/atlas-bear/cue-kit/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/atlas-bear/cue-kit/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/atlas-bear/cue-kit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/atlas-bear/cue-kit/releases/tag/v0.2.0
