@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check .
+
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install ffmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg
+      - name: Install ffmpeg (Linux, Windows)
+        if: runner.os != 'macOS'
+        uses: FedericoCarboni/setup-ffmpeg@v3
+      - run: python -m pip install -e ".[dev]"
+      - run: pytest
+      - name: Smoke test the CLI on a generated clip
+        shell: bash
+        run: |
+          ffmpeg -hide_banner -loglevel error -y \
+            -f lavfi -i testsrc=duration=5:size=320x240:rate=25 \
+            -f lavfi -i sine=frequency=440:duration=5 \
+            -shortest -c:v libx264 -pix_fmt yuv420p -c:a aac "smoke clip.mp4"
+          cue-kit --version
+          for mode in summary transcript training-doc lecture-notes; do
+            cue-kit "smoke clip.mp4" --mode "$mode" --no-whisper --out-dir "work-$mode" > "out-$mode.md"
+          done
+          ls work-summary/frames/frame_0001.jpg
+          grep -q "# cue-kit: video report" out-summary.md
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install build twine
+      - run: python -m build
+      - run: python -m twine check --strict dist/*

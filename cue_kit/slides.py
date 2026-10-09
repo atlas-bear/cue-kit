@@ -9,14 +9,14 @@ N evenly-spaced frames; we want one frame *per slide*. Strategy:
 2. (Optional) Run OCR over each detected slide to capture slide text.
 3. Group transcript segments under the slide whose timestamp range they fall in.
 
-This module is scaffolded — the API below is the contract the lecture-notes
-mode will call. Implementation lands in a follow-up commit.
+Status: group_transcript_by_slide() is implemented; detect_slides() and
+ocr_slide() are planned (see README Roadmap) and raise NotImplementedError.
+Their signatures are the contract the lecture-notes mode calls.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-
 
 # Default scene-change threshold. Higher = fewer detected slides (more conservative).
 # 0.3 is a reasonable starting point for slide decks; tune per source.
@@ -39,7 +39,7 @@ def detect_slides(
 ) -> list[Slide]:
     """Extract one frame per detected slide change.
 
-    Implementation TODO: ffmpeg `-vf "select=gt(scene\\,{threshold}),scale={W}:-2"`
+    Planned approach: ffmpeg `-vf "select=gt(scene\\,{threshold}),scale={W}:-2"`
     with `-vsync vfr` and `-frame_pts 1` so we can recover the source PTS for
     each kept frame. Map each output filename to its PTS to get
     `timestamp_seconds`.
@@ -50,7 +50,7 @@ def detect_slides(
 def ocr_slide(slide: Slide) -> str:
     """OCR a single slide image. Requires the [ocr] extras (pytesseract + Pillow).
 
-    Implementation TODO: lazy-import pytesseract; raise a friendly error if it
+    Planned approach: lazy-import pytesseract; raise a friendly error if it
     or the tesseract binary is missing.
     """
     raise NotImplementedError("slides.ocr_slide not yet implemented")

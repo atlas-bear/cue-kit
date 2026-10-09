@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
+from cue_kit.errors import CueKitError
 
 VIDEO_EXTS = {".mp4", ".mkv", ".webm", ".mov", ".m4v", ".avi", ".flv", ".wmv"}
 
@@ -24,7 +25,9 @@ def is_url(source: str) -> bool:
 def resolve_local(path: str) -> dict:
     p = Path(path).expanduser().resolve()
     if not p.exists():
-        raise SystemExit(f"File not found: {p}")
+        raise CueKitError(f"File not found: {p}")
+    if not p.is_file():
+        raise CueKitError(f"Not a file: {p}")
     if p.suffix.lower() not in VIDEO_EXTS:
         print(
             f"[cue-kit] warning: {p.suffix} is not a known video extension, proceeding anyway",
@@ -48,17 +51,30 @@ def _pick_subtitle(out_dir: Path) -> Path | None:
 
 def _pick_video(out_dir: Path) -> Path | None:
     for ext in (".mp4", ".mkv", ".webm", ".mov"):
-        for candidate in out_dir.glob(f"video*{ext}"):
+        for candidate in sorted(out_dir.glob(f"video*{ext}")):
             return candidate
-    for candidate in out_dir.glob("video.*"):
+    for candidate in sorted(out_dir.glob("video.*")):
         if candidate.suffix.lower() in VIDEO_EXTS:
             return candidate
     return None
 
 
+def _read_info(info_path: Path, url: str) -> dict:
+    try:
+        raw = json.loads(info_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"url": url}
+    return {
+        "title": raw.get("title"),
+        "uploader": raw.get("uploader") or raw.get("channel"),
+        "duration": raw.get("duration"),
+        "url": raw.get("webpage_url") or url,
+    }
+
+
 def download_url(url: str, out_dir: Path) -> dict:
     if shutil.which("yt-dlp") is None:
-        raise SystemExit("yt-dlp is not installed. See README install instructions.")
+        raise CueKitError("yt-dlp is not installed. See README install instructions.")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     output_template = str(out_dir / "video.%(ext)s")
@@ -81,33 +97,23 @@ def download_url(url: str, out_dir: Path) -> dict:
     ]
 
     # yt-dlp can exit non-zero when a subtitle variant fails (e.g. 429) even when
-    # the video itself downloaded fine. Treat "video file present" as success.
-    result = subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
+    # the video itself downloaded fine, so success is "a video file exists".
+    # No timeout: large downloads legitimately take a long time.
+    result = subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr, check=False)
     video = _pick_video(out_dir)
     if video is None:
-        raise SystemExit(
+        raise CueKitError(
             f"yt-dlp did not produce a video file in {out_dir} (exit {result.returncode})"
         )
 
     subtitle = _pick_subtitle(out_dir)
     info_path = out_dir / "video.info.json"
-    info: dict = {}
-    if info_path.exists():
-        try:
-            raw = json.loads(info_path.read_text())
-            info = {
-                "title": raw.get("title"),
-                "uploader": raw.get("uploader") or raw.get("channel"),
-                "duration": raw.get("duration"),
-                "url": raw.get("webpage_url") or url,
-            }
-        except Exception:
-            info = {"url": url}
+    info = _read_info(info_path, url) if info_path.exists() else {"url": url}
 
     return {
         "video_path": str(video),
         "subtitle_path": str(subtitle) if subtitle else None,
-        "info": info or {"url": url},
+        "info": info,
         "downloaded": True,
     }
 

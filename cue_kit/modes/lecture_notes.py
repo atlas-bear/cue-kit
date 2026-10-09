@@ -7,17 +7,17 @@ Pipeline:
   4. Emit a per-slide narrative with the slide's image reference + spoken text.
 
 slides.detect_slides() and slides.ocr_slide() are the implementation hooks —
-both currently raise NotImplementedError. Until they land, this mode falls
-back to emitting an evenly-sliced transcript with a TODO marker, so the
-output shape is testable end-to-end.
+detect_slides() currently raises NotImplementedError; until it lands, this
+mode falls back to the ungrouped transcript, so the mode is testable
+end-to-end.
 """
 from __future__ import annotations
 
 import sys
 
+from cue_kit import slides as slides_mod
 from cue_kit.frames import format_time
 from cue_kit.pipeline import PipelineResult
-from cue_kit import slides as slides_mod
 
 
 def render(r: PipelineResult) -> None:
@@ -83,6 +83,7 @@ def render(r: PipelineResult) -> None:
             print("```")
         else:
             print("_No transcript available._")
+        print()
 
     print("---")
     print(f"_Work dir: `{r.work_dir}` — delete when done._")

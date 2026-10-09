@@ -8,7 +8,7 @@ Target shape:
     1-2 paragraph summary of what this training covers.
 
     ## Sections
-    ### 1. <Section title>  (MM:SS – MM:SS)
+    ### 1. <Section title>  (MM:SS - MM:SS)
     Narrative explanation of the section. Embeds frame references where the
     visual is critical (e.g. UI screenshots, diagrams).
 

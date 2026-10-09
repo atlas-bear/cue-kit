@@ -10,9 +10,10 @@ import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from cue_kit import config, transcribe, whisper
 from cue_kit import frames as frames_mod
-from cue_kit import transcribe, whisper
 from cue_kit.download import download, is_url
+from cue_kit.errors import CueKitError
 
 
 @dataclass
@@ -28,7 +29,7 @@ class PipelineResult:
     transcript_source: str | None = None
     fps: float = 0.0
     target_frames: int = 0
-    max_frames: int = 100
+    max_frames: int = frames_mod.HARD_MAX_FRAMES
     resolution: int = 512
     focused: bool = False
     start_seconds: float | None = None
@@ -51,7 +52,13 @@ def run(
     use_whisper: bool = True,
     whisper_backend: str | None = None,
 ) -> PipelineResult:
-    max_frames = min(max_frames, 100)
+    if max_frames < 1:
+        raise CueKitError("--max-frames must be at least 1")
+    if fps_override is not None and fps_override <= 0:
+        raise CueKitError("--fps must be greater than 0")
+    if resolution < 16:
+        raise CueKitError("--resolution must be at least 16 pixels")
+    max_frames = min(max_frames, frames_mod.HARD_MAX_FRAMES)
 
     if out_dir:
         work = Path(out_dir).expanduser().resolve()
@@ -74,11 +81,11 @@ def run(
     end_sec = frames_mod.parse_time(end)
 
     if start_sec is not None and start_sec < 0:
-        raise SystemExit("--start must be non-negative")
+        raise CueKitError("--start must be non-negative")
     if end_sec is not None and start_sec is not None and end_sec <= start_sec:
-        raise SystemExit("--end must be greater than --start")
+        raise CueKitError("--end must be greater than --start")
     if full_duration > 0 and start_sec is not None and start_sec >= full_duration:
-        raise SystemExit(
+        raise CueKitError(
             f"--start {start_sec:.1f}s is past end of video ({full_duration:.1f}s)"
         )
 
@@ -93,7 +100,7 @@ def run(
         fps, target = frames_mod.auto_fps(effective_duration, max_frames=max_frames)
     if fps_override is not None:
         fps = min(fps_override, frames_mod.MAX_FPS)
-        target = max(1, int(round(fps * effective_duration)))
+        target = min(max_frames, max(1, round(fps * effective_duration)))
 
     scope = (
         f"{frames_mod.format_time(effective_start)}-{frames_mod.format_time(effective_end)} "
@@ -124,7 +131,7 @@ def run(
             )
             transcript_text = transcribe.format_transcript(transcript_segments)
             transcript_source = "captions"
-        except Exception as exc:
+        except (OSError, ValueError) as exc:
             print(f"[cue-kit] subtitle parse failed: {exc}", file=sys.stderr)
 
     if not transcript_segments and use_whisper:
@@ -143,7 +150,7 @@ def run(
                 )
                 transcript_text = transcribe.format_transcript(transcript_segments)
                 transcript_source = f"whisper ({used_backend})"
-            except SystemExit as exc:
+            except CueKitError as exc:
                 print(f"[cue-kit] whisper fallback failed: {exc}", file=sys.stderr)
         else:
             hint = (
@@ -153,7 +160,7 @@ def run(
             )
             print(
                 f"[cue-kit] {hint} — set GROQ_API_KEY or OPENAI_API_KEY "
-                "in ~/.config/cue-kit/.env to enable the Whisper fallback",
+                f"in {config.CONFIG_FILE} to enable the Whisper fallback",
                 file=sys.stderr,
             )
 

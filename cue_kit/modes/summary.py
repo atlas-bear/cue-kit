@@ -1,7 +1,7 @@
 """Default mode: full report with frame timeline and transcript.
 
-This is the original /watch report shape — useful when an LLM (Claude) will
-read the frames and produce a summary, or when a human wants the raw evidence.
+Useful when an LLM (e.g. Claude) will read the frames and produce a summary,
+or when a human wants the raw evidence.
 """
 from __future__ import annotations
 
