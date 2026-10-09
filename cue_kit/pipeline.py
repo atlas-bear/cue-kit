@@ -38,6 +38,8 @@ class PipelineResult:
     effective_end: float = 0.0
     effective_duration: float = 0.0
     full_duration: float = 0.0
+    slide_tolerance: float = 0.003
+    ocr: bool = False
 
 
 def run(
@@ -51,6 +53,8 @@ def run(
     end: str | None = None,
     use_whisper: bool = True,
     whisper_backend: str | None = None,
+    slide_tolerance: float = 0.003,
+    ocr: bool = False,
 ) -> PipelineResult:
     if max_frames < 1:
         raise CueKitError("--max-frames must be at least 1")
@@ -58,6 +62,8 @@ def run(
         raise CueKitError("--fps must be greater than 0")
     if resolution < 16:
         raise CueKitError("--resolution must be at least 16 pixels")
+    if not 0 < slide_tolerance < 1:
+        raise CueKitError("--slide-tolerance must be between 0 and 1")
     max_frames = min(max_frames, frames_mod.HARD_MAX_FRAMES)
 
     if out_dir:
@@ -185,4 +191,6 @@ def run(
         effective_end=effective_end,
         effective_duration=effective_duration,
         full_duration=full_duration,
+        slide_tolerance=slide_tolerance,
+        ocr=ocr,
     )

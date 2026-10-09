@@ -7,6 +7,32 @@ releases may include breaking changes; they will always be called out below.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-09
+
+### Added
+- `lecture-notes` mode now works end to end: it detects slides, saves one image per slide, and
+  groups the narration under the slide that was on screen when it was spoken. Slides are found
+  as the stretches where the picture holds still (ffmpeg `freezedetect`), each slide image is
+  taken after any bullet builds have finished, and near-duplicate slides are merged. Detection
+  respects `--start`/`--end`.
+- `--slide-tolerance` to tune slide detection (raise it for webcam insets or cursor movement).
+- `--ocr` to include each slide's text, using the `[ocr]` extra and `tesseract`.
+
+### Changed
+- **Breaking:** `transcript` mode now exits with code 1 and an `[cue-kit] error:` message when
+  no transcript is available (previously it printed a notice and exited 0). Scripts that relied
+  on exit code 0 should check for this.
+- Errors raised while rendering output are reported like other errors (exit code 1), not as a
+  traceback.
+- Transcript lines that begin just before a `--start` range are filed under the first slide
+  instead of being dropped.
+
+### Fixed
+- YouTube auto-captions no longer repeat half of each line in transcripts. Each rolling cue's
+  carried-over line is now dropped, and the first words of a video are no longer lost.
+- WebVTT timestamps without an hours field (`MM:SS.mmm`) are now parsed.
+- README: restored the OCR install instructions dropped in 0.2.0.
+
 ## [0.2.1] - 2026-10-09
 
 ### Changed
@@ -44,6 +70,7 @@ releases may include breaking changes; they will always be called out below.
 
 - Initial scaffold: `summary` and `transcript` modes, scaffolded `training-doc` and `lecture-notes` modes, Groq/OpenAI Whisper fallback, and the Claude Code skill wrapper.
 
-[Unreleased]: https://github.com/atlas-bear/cue-kit/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/atlas-bear/cue-kit/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/atlas-bear/cue-kit/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/atlas-bear/cue-kit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/atlas-bear/cue-kit/releases/tag/v0.2.0

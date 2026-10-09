@@ -74,3 +74,45 @@ def test_format_transcript():
         [{"start": 5.9, "end": 6, "text": "x"}, {"start": 125, "end": 130, "text": "y"}]
     )
     assert out == "[00:05] x\n[02:05] y"
+
+
+YOUTUBE_ROLLING = """WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.080 --> 00:00:01.709 align:start position:0%
+\x20
+I'll<00:00:00.240><c> be</c><00:00:00.359><c> showing</c><00:00:01.520><c> the</c>
+
+00:00:01.709 --> 00:00:01.719 align:start position:0%
+I'll be showing the
+\x20
+
+00:00:01.719 --> 00:00:03.709 align:start position:0%
+I'll be showing the
+improved<00:00:02.760><c> PowerPoint</c><00:00:03.360><c> recorder</c>
+
+00:00:03.709 --> 00:00:03.719 align:start position:0%
+improved PowerPoint recorder
+\x20
+
+00:00:03.719 --> 00:00:05.869 align:start position:0%
+improved PowerPoint recorder
+right<00:00:04.319><c> here</c>
+"""
+
+
+def test_parse_vtt_youtube_rolling_captions(tmp_path):
+    segments = transcribe.parse_vtt(write_vtt(tmp_path, YOUTUBE_ROLLING))
+    assert segments == [
+        {"start": 0.08, "end": 1.72, "text": "I'll be showing the"},
+        {"start": 1.72, "end": 3.72, "text": "improved PowerPoint recorder"},
+        {"start": 3.72, "end": 5.87, "text": "right here"},
+    ]
+
+
+def test_parse_vtt_without_hours(tmp_path):
+    vtt = "WEBVTT\n\n01:02.500 --> 01:04.000\nshort form\n"
+    assert transcribe.parse_vtt(write_vtt(tmp_path, vtt)) == [
+        {"start": 62.5, "end": 64.0, "text": "short form"}
+    ]

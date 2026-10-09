@@ -67,6 +67,20 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Force a Whisper backend. Default: prefer Groq, fall back to OpenAI.",
     )
+    ap.add_argument(
+        "--slide-tolerance",
+        type=float,
+        default=0.003,
+        help=(
+            "lecture-notes: on-screen change ignored when detecting slides (default 0.003; "
+            "raise for webcam insets or cursor movement, lower if slides get merged)"
+        ),
+    )
+    ap.add_argument(
+        "--ocr",
+        action="store_true",
+        help="lecture-notes: OCR each slide (needs cue-kit[ocr] and tesseract)",
+    )
     return ap
 
 
@@ -85,15 +99,16 @@ def main(argv: list[str] | None = None) -> int:
             end=args.end,
             use_whisper=not args.no_whisper,
             whisper_backend=args.whisper,
+            slide_tolerance=args.slide_tolerance,
+            ocr=args.ocr,
         )
+        MODES[args.mode](result)
     except CueKitError as exc:
         print(f"[cue-kit] error: {exc}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("[cue-kit] interrupted", file=sys.stderr)
         return 130
-
-    MODES[args.mode](result)
     return 0
 
 
