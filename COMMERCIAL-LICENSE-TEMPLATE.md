@@ -2,7 +2,7 @@
 
 > ⚠️ **TEMPLATE ONLY — NOT A SIGNED AGREEMENT.**
 >
-> This document is a *starting point* for a commercial license agreement between AB//LABS, the copyright holder of cue-kit ("Licensor") and a client ("Licensee"). It is **not** legal advice and has **not** been reviewed by an attorney. **Do not execute this document without review by a qualified lawyer in the relevant jurisdiction.** Terms around scope, fees, term, indemnification, and governing law in particular vary widely between deals and have meaningful legal consequences. Treat the brackets `[LIKE THIS]` as placeholders that must be filled in or struck.
+> This document is a *starting point* for a commercial license agreement between Austmarr Byrdingr OÜ, trading as AB//LABS, the copyright holder of cue-kit ("Licensor") and a client ("Licensee"). It is **not** legal advice and has **not** been reviewed by an attorney. **Do not execute this document without review by a qualified lawyer in the relevant jurisdiction.** Terms around scope, fees, term, indemnification, and governing law in particular vary widely between deals and have meaningful legal consequences. Treat the brackets `[LIKE THIS]` as placeholders that must be filled in or struck.
 
 ---
 
@@ -10,7 +10,7 @@
 
 This Commercial License Agreement (the "Agreement") is entered into on **[DATE]** ("Effective Date") between:
 
-- **Licensor:** AB//LABS [REGISTERED LEGAL ENTITY NAME — confirm before signing], [ADDRESS], hereinafter "Licensor"; and
+- **Licensor:** Austmarr Byrdingr OÜ, trading as AB//LABS, registry code [REGISTRY CODE], [REGISTERED ADDRESS], hereinafter "Licensor"; and
 - **Licensee:** [CLIENT LEGAL NAME], [ADDRESS], hereinafter "Licensee".
 
 ## 2. Definitions
@@ -75,7 +75,7 @@ TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, LICENSOR'S TOTAL CUMULATIVE L
 
 ## 12. Governing Law and Venue
 
-This Agreement is governed by and construed under the laws of **[JURISDICTION]**, without regard to its conflict-of-law principles. The parties consent to the exclusive jurisdiction and venue of the state and federal courts located in **[COUNTY, STATE]** for any dispute arising out of or relating to this Agreement.
+This Agreement is governed by and construed under the laws of **[JURISDICTION]**, without regard to its conflict-of-law principles. The parties consent to the exclusive jurisdiction of the courts of **[COURT, CITY, COUNTRY]** for any dispute arising out of or relating to this Agreement.
 
 ## 13. Miscellaneous
 
@@ -90,7 +90,7 @@ This Agreement is governed by and construed under the laws of **[JURISDICTION]**
 
 **IN WITNESS WHEREOF**, the parties have executed this Agreement as of the Effective Date.
 
-**Licensor** — AB//LABS
+**Licensor** — Austmarr Byrdingr OÜ (AB//LABS)
 
 Signature: ____________________________  Date: __________
 
