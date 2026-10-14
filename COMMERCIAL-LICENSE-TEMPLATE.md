@@ -10,7 +10,7 @@
 
 This Commercial License Agreement (the "Agreement") is entered into on **[DATE]** ("Effective Date") between:
 
-- **Licensor:** Austmarr Byrdingr OÜ, trading as AB//LABS, registry code 17350796, Harju maakond, Tallinn, Lasnamäe linnaosa, Sepapaja tn 6, 15551, Estonia, hereinafter "Licensor"; and
+- **Licensor:** Austmarr Byrdingr OÜ, trading as AB//LABS, registry code [REGISTRY CODE], [REGISTERED ADDRESS], hereinafter "Licensor"; and
 - **Licensee:** [CLIENT LEGAL NAME], [ADDRESS], hereinafter "Licensee".
 
 ## 2. Definitions
