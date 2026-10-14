@@ -10,7 +10,7 @@
 
 This Commercial License Agreement (the "Agreement") is entered into on **[DATE]** ("Effective Date") between:
 
-- **Licensor:** Austmarr Byrdingr OÜ, trading as AB//LABS, registry code [REGISTRY CODE], [REGISTERED ADDRESS], hereinafter "Licensor"; and
+- **Licensor:** Austmarr Byrdingr OÜ, trading as AB//LABS, registry code 17350796, Harju maakond, Tallinn, Lasnamäe linnaosa, Sepapaja tn 6, 15551, Estonia, hereinafter "Licensor"; and
 - **Licensee:** [CLIENT LEGAL NAME], [ADDRESS], hereinafter "Licensee".
 
 ## 2. Definitions
@@ -75,7 +75,7 @@ TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, LICENSOR'S TOTAL CUMULATIVE L
 
 ## 12. Governing Law and Venue
 
-This Agreement is governed by and construed under the laws of **[JURISDICTION]**, without regard to its conflict-of-law principles. The parties consent to the exclusive jurisdiction of the courts of **[COURT, CITY, COUNTRY]** for any dispute arising out of or relating to this Agreement.
+This Agreement is governed by and construed under the laws of **the Republic of Estonia**, without regard to its conflict-of-law principles. The parties consent to the exclusive jurisdiction of the courts of **Estonia, with Harju County Court (Harju Maakohus), Tallinn, as the court of first instance** for any dispute arising out of or relating to this Agreement.
 
 ## 13. Miscellaneous
 
